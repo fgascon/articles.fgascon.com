@@ -6,6 +6,7 @@ module.exports = function(app){
 	app.get('/:auth/list', listArticle);
 	app.get('/:auth/get', getArticle);
 	app.post('/:auth/create', createArticle);
+	app.post('/:auth/update', updateArticle);
 	
 	function listArticle(req, res){
 		parseClient(req, res, function(client){
@@ -91,6 +92,60 @@ module.exports = function(app){
 						showArticle(req, res, article);
 					}
 				});
+			}
+			
+		});
+	}
+	
+	function updateArticle(req, res){
+		parseClient(req, res, function(client){
+			var params = req.body;
+			if(!params.id){
+				res.json(400, {
+					message: "Parameter id missing"
+				});
+				
+			}else if(!params.title){
+				res.json(400, {
+					message: "Parameter title missing"
+				});
+				
+			}else if(!params.body){
+				res.json(400, {
+					message: "Parameter body missing"
+				});
+				
+			}else if(!params.author){
+				res.json(400, {
+					message: "Parameter author missing"
+				});
+				
+			}else{
+				Article.findOne({clientId:client.id, _id:params.id})
+					.select('_id title body author publishDate')
+					.exec(function(err, article){
+						if(err){
+							res.json(500, {
+								message: err
+							});
+						}else{
+							article.set({
+								title: params.title,
+								body: params.body,
+								author: params.author
+							});
+							
+							article.save(function(err){
+								if(err){
+									res.json(500, {
+										message: err
+									});
+								}else{
+									showArticle(req, res, article);
+								}
+							});
+						}
+					});
 			}
 			
 		});
