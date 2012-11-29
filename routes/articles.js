@@ -73,6 +73,7 @@ module.exports = function(app){
 	function showArticle(req, res, article){
 		res.json({
 			data:{
+				id: article.id,
 				title: article.get('title'),
 				body: article.get('body'),
 				author: article.get('author'),
