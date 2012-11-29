@@ -4,7 +4,7 @@ var Article = require('../models/article').Model;
 module.exports = function(app){
 	
 	app.get('/:auth/list', listArticle);
-	app.get('/:auth/create', createArticle);
+	app.post('/:auth/create', createArticle);
 	
 	function listArticle(req, res){
 		parseClient(req, res, function(client){
@@ -30,24 +30,42 @@ module.exports = function(app){
 	
 	function createArticle(req, res){
 		parseClient(req, res, function(client){
-			
-			var article = new Article();
-			
-			article.set({
-				clientId: client.get('id'),
-				title:"test1212",
-				body:"My content here."
-			});
-			
-			article.save(function(err){
-				if(err){
-					res.json(500, {
-						message: err
-					});
-				}else{
-					showArticle(article);
-				}
-			});
+			var params = req.body;
+			if(!params.title){
+				res.json(400, {
+					message: "Parameter title missing"
+				});
+				
+			}else if(!params.body){
+				res.json(400, {
+					message: "Parameter body missing"
+				});
+				
+			}else if(!params.author){
+				res.json(400, {
+					message: "Parameter author missing"
+				});
+				
+			}else{
+				var article = new Article();
+				
+				article.set({
+					clientId: client.get('id'),
+					title: params.title,
+					body: params.body,
+					author: params.author
+				});
+				
+				article.save(function(err){
+					if(err){
+						res.json(500, {
+							message: err
+						});
+					}else{
+						showArticle(req, res, article);
+					}
+				});
+			}
 			
 		});
 	}
@@ -57,6 +75,7 @@ module.exports = function(app){
 			data:{
 				title: article.get('title'),
 				body: article.get('body'),
+				author: article.get('author'),
 				publishDate: article.get('publishDate')
 			}
 		});

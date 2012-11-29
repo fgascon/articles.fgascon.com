@@ -7,7 +7,7 @@ var schema = new Schema({
 	title: String,
 	body: String,
 	publishDate: Date,
-	author: ObjectId
+	author: String
 });
 
 exports.Model = mongoose.model('Article', schema);
