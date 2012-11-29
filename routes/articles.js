@@ -2,15 +2,16 @@ var clientAppUtil = require('../lib/clientAppUtil');
 var Article = require('../models/article').Model;
 
 module.exports = function(app){
-	
+
 	app.get('/:auth/list', listArticle);
+	app.get('/:auth/get', getArticle);
 	app.post('/:auth/create', createArticle);
 	
 	function listArticle(req, res){
 		parseClient(req, res, function(client){
 			
 			Article.find({clientId:client.id})
-				.select('title body')
+				.select('_id title body author publishDate')
 				.exec(function(err, articles){
 					if(err){
 						res.json(500, {
@@ -24,6 +25,31 @@ module.exports = function(app){
 						res.json(result);
 					}
 				});
+			
+		});
+	}
+	
+	function getArticle(req, res){
+		parseClient(req, res, function(client){
+			
+			var params = req.query;
+			if(!params.id){
+				res.json(500, {
+					message: "Parameter id missing"
+				});
+			}else{
+				Article.findOne({clientId:client.id, _id:params.id})
+					.select('_id title body author publishDate')
+					.exec(function(err, article){
+						if(err){
+							res.json(500, {
+								message: err
+							});
+						}else{
+							res.json(article ? article.toObject() : null);
+						}
+					});
+			}
 			
 		});
 	}
