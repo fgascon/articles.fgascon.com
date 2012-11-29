@@ -3,7 +3,30 @@ var Article = require('../models/article').Model;
 
 module.exports = function(app){
 	
+	app.get('/:auth/list', listArticle);
 	app.get('/:auth/create', createArticle);
+	
+	function listArticle(req, res){
+		parseClient(req, res, function(client){
+			
+			Article.find({clientId:client.id})
+				.select('title body')
+				.exec(function(err, articles){
+					if(err){
+						res.json(500, {
+							message: err
+						});
+					}else{
+						var result = [];
+						articles.forEach(function(article){
+							result.push(article.toObject());
+						});
+						res.json(result);
+					}
+				});
+			
+		});
+	}
 	
 	function createArticle(req, res){
 		parseClient(req, res, function(client){
@@ -19,7 +42,7 @@ module.exports = function(app){
 			article.save(function(err){
 				if(err){
 					res.json(500, {
-						message:err
+						message: err
 					});
 				}else{
 					showArticle(article);
